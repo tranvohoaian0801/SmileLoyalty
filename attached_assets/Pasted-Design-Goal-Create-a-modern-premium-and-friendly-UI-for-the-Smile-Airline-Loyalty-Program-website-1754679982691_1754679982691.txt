@@ -1,0 +1,118 @@
+Design Goal: Create a modern, premium, and friendly UI for the Smile Airline Loyalty Program website. The interface must be image-rich, clean, smooth in interactions, and highly attractive to encourage user engagement. Use a joyful airline theme with subtle animations and a professional yet welcoming feel.
+
+1. Login & Registration Page
+Full-width split screen:
+
+Left panel: Large hero image (airplane in the sky, happy passengers, or destination view), Smile Airline logo, and a short inspiring slogan in English, e.g., "Fly More, Earn More, Smile Always".
+
+Right panel: Card-style login form with:
+
+Email field
+
+Password field
+
+Login button (bright, gradient blue → yellow)
+
+Below form: Links for “Register” and “Forgot Password”
+
+Soft background gradient behind both panels for depth.
+
+Animation: Inputs glow slightly when active; button hover has a smooth ripple effect.
+
+2. Main Dashboard (Post-login)
+Header:
+
+Left: Logo
+
+Center: Main menu (Profile, Earning Rules, Requests, History, Redeem Points)
+
+Right: User avatar with dropdown (settings, logout)
+
+Body Layout:
+
+Hero Section (Top):
+
+Welcome banner with user avatar, name, points balance, and membership tier badge (e.g., Silver, Gold, Platinum) over a soft destination photo background.
+
+Quick Actions (just below hero):
+
+Floating Action Button (FAB) for “+ Create New Point Request”, fixed at bottom-right of viewport, bright and attention-grabbing.
+
+Other quick action cards: View Earning Rules, Redeem Points.
+
+Main Content:
+
+Earning Programs (image cards with hover zoom effect, “Join Now” button)
+
+Redeem for Vouchers (carousel with voucher images, points needed)
+
+Footer: Airline contact info, terms & conditions, social media icons.
+
+3. Create New Point Request
+Modal or dedicated page with large form cards:
+
+Flight Number (text input)
+
+Departure Airport (dropdown with search)
+
+Arrival Airport (dropdown with search)
+
+Departure Date (date picker with calendar pop-up)
+
+Additional Notes (textarea)
+
+Submit button: Large, full-width, gradient color, smooth “success” animation on click.
+
+Upon submit → Redirect to My Point Requests page with success toast notification.
+
+4. My Point Requests
+Top overview section:
+
+Three statistic cards: Approved (green), Pending (yellow), Rejected (red)
+
+Table view:
+
+Columns: Request Date, Status (colored tag), Action (View Detail button)
+
+View Detail → slide-in side panel with full request info (no page reload).
+
+5. Point History
+Full-width chart (smooth animated line or bar chart) showing:
+
+Points Earned vs. Points Redeemed
+
+Filter by Date Range
+
+Small summary cards below chart: Total Earned, Total Used, Current Balance.
+
+6. Profile Page
+Two-column layout:
+
+Left: User avatar with upload option, Membership Tier badge, Points Balance.
+
+Right: Editable profile info (except Membership ID which is locked & greyed out).
+
+Clean card sections with icons for each info category.
+
+Design Style & UX Notes
+Colors: Airline blue, gold accents, soft gradients.
+
+Typography: Rounded sans-serif (e.g., Poppins, Nunito) for friendly readability.
+
+Images: Use high-quality travel and destination photos.
+
+Animations: Smooth hover effects, soft page transitions, micro-interactions for clicks.
+
+Responsive: Mobile-first, ensuring all elements scale gracefully.
+
+Usability Priority: “Create New Point Request” is always visible and easy to click.
+
+Layout Flow: Visual hierarchy — hero banner → quick actions → main programs → supporting sections.
+
+Output expectation:
+
+Provide a high-fidelity UI mockup for desktop and mobile views.
+
+Include visual states for hover, active, and empty data scenarios.
+
+Present both light mode and optional dark mode variations.
