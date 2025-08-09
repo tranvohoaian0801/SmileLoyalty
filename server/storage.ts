@@ -4,6 +4,7 @@ import {
   pointHistory,
   type User,
   type UpsertUser,
+  type RegisterUser,
   type PointRequest,
   type InsertPointRequest,
   type PointHistory,
@@ -14,10 +15,11 @@ import { eq, desc } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
-  // User operations
-  // (IMPORTANT) these user operations are mandatory for Replit Auth.
+  // User operations for email/password auth
   getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(userData: Omit<RegisterUser, 'confirmPassword'>): Promise<User>;
+  updateUser(id: string, userData: Partial<User>): Promise<User>;
   
   // Point request operations
   getPointRequestsByUser(userId: string): Promise<PointRequest[]>;
@@ -33,31 +35,44 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations
-  // (IMPORTANT) these user operations are mandatory for Replit Auth.
+  // User operations for email/password auth
 
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
-    // Generate membership ID if not provided
-    if (!userData.membershipId) {
-      const membershipId = `SA-${userData.membershipTier || 'SILVER'}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-      userData.membershipId = membershipId;
-    }
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
 
+  async createUser(userData: Omit<RegisterUser, 'confirmPassword'>): Promise<User> {
+    // Generate membership ID
+    const membershipId = `SA-SILVER-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+    
     const [user] = await db
       .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
+      .values({
+        ...userData,
+        membershipId,
+        membershipTier: 'Silver',
+        currentPoints: 0,
+        totalEarned: 0,
+        totalUsed: 0,
       })
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: string, userData: Partial<User>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        ...userData,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id))
       .returning();
     return user;
   }

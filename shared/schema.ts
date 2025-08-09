@@ -25,17 +25,18 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table.
-// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
+// User storage table with email/password authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
+  email: varchar("email").unique().notNull(),
+  password: varchar("password").default('temp_password'),
+  firstName: varchar("first_name").default('Unknown'),
+  lastName: varchar("last_name").default('User'),
+  dateOfBirth: varchar("date_of_birth").default('1990-01-01'),
+  gender: varchar("gender").default('prefer-not-to-say'),
+  nationality: varchar("nationality").default('other'),
   profileImageUrl: varchar("profile_image_url"),
   phone: varchar("phone"),
-  dateOfBirth: varchar("date_of_birth"),
-  gender: varchar("gender"),
   address: text("address"),
   membershipId: varchar("membership_id").unique(),
   membershipTier: varchar("membership_tier").default("Silver"),
@@ -91,7 +92,31 @@ export const pointHistoryRelations = relations(pointHistory, ({ one }) => ({
   }),
 }));
 
-// Schemas
+// Authentication schemas
+export const registerSchema = createInsertSchema(users).omit({
+  id: true,
+  membershipId: true,
+  membershipTier: true,
+  currentPoints: true,
+  totalEarned: true,
+  totalUsed: true,
+  createdAt: true,
+  updatedAt: true,
+  profileImageUrl: true,
+  phone: true,
+  address: true,
+}).extend({
+  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -113,6 +138,8 @@ export const insertPointHistorySchema = createInsertSchema(pointHistory).omit({
 });
 
 // Types
+export type RegisterUser = z.infer<typeof registerSchema>;
+export type LoginUser = z.infer<typeof loginSchema>;
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type PointRequest = typeof pointRequests.$inferSelect;
