@@ -26,9 +26,11 @@ The application uses PostgreSQL as the primary database with Drizzle ORM providi
 Session management utilizes PostgreSQL for persistent session storage, ensuring reliable authentication state across server restarts. Database migrations are handled through Drizzle Kit, enabling version-controlled schema evolution.
 
 ### Authentication and Authorization
-Authentication is implemented using Replit's OIDC provider, eliminating the need for custom user credential management. The system maintains user sessions in PostgreSQL using connect-pg-simple, providing secure, server-side session storage.
+Authentication is implemented using Replit's OpenID Connect (OIDC) provider with Passport.js for session management. The system automatically creates user accounts on first login and maintains sessions in PostgreSQL using connect-pg-simple for secure, server-side session storage.
 
-Authorization is handled through middleware that verifies authenticated sessions before allowing access to protected API endpoints. User context is maintained throughout the application, enabling personalized experiences and secure data access.
+Authorization is handled through the `isAuthenticated` middleware that verifies valid sessions and tokens before allowing access to protected API endpoints. User context includes claims data and session tokens, enabling personalized experiences and secure data access throughout the application.
+
+**Migration Note**: The system was successfully migrated from email/password authentication to Replit Auth on January 13, 2025, improving security and eliminating the need for custom credential management.
 
 ### Development and Build Pipeline
 The development environment uses Vite for fast hot module replacement and optimized builds. The build process compiles both client-side React application and server-side Node.js code, with separate bundling strategies optimized for their respective environments.

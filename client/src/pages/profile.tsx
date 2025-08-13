@@ -14,7 +14,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 
 export default function Profile() {
   const { toast } = useToast();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -28,7 +28,7 @@ export default function Profile() {
 
   // Redirect to home if not authenticated
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !user) {
       toast({
         title: "Unauthorized",
         description: "You are logged out. Logging in again...",
@@ -39,7 +39,7 @@ export default function Profile() {
       }, 500);
       return;
     }
-  }, [isAuthenticated, isLoading, toast]);
+  }, [user, isLoading, toast]);
 
   // Initialize form data when user data loads
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function Profile() {
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {

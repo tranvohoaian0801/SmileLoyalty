@@ -32,13 +32,13 @@ export function getSession() {
     tableName: "sessions",
   });
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET || "your-secret-key-here-please-change-in-production",
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: false, // Set to true in production with HTTPS
       maxAge: sessionTtl,
     },
   });
@@ -48,10 +48,11 @@ function updateUserSession(
   user: any,
   tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers
 ) {
-  user.claims = tokens.claims();
+  const claims = tokens.claims();
+  user.claims = claims;
   user.access_token = tokens.access_token;
   user.refresh_token = tokens.refresh_token;
-  user.expires_at = user.claims?.exp;
+  user.expires_at = claims?.exp || null;
 }
 
 async function upsertUser(
@@ -60,8 +61,8 @@ async function upsertUser(
   await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
+    firstName: claims["first_name"] || 'Unknown',
+    lastName: claims["last_name"] || 'User',
     profileImageUrl: claims["profile_image_url"],
   });
 }
@@ -78,10 +79,15 @@ export async function setupAuth(app: Express) {
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
     verified: passport.AuthenticateCallback
   ) => {
-    const user = {};
-    updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
-    verified(null, user);
+    const claims = tokens.claims();
+    await upsertUser(claims);
+    const user = await storage.getUser(claims.sub);
+    if (user) {
+      updateUserSession(user, tokens);
+      verified(null, user);
+    } else {
+      verified(new Error("Failed to create user"), false);
+    }
   };
 
   for (const domain of process.env

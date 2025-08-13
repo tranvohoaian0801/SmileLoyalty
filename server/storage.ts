@@ -15,11 +15,12 @@ import { eq, desc } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
-  // User operations for email/password auth
+  // User operations for Replit auth
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(userData: Omit<RegisterUser, 'confirmPassword'>): Promise<User>;
   updateUser(id: string, userData: Partial<User>): Promise<User>;
+  upsertUser(userData: UpsertUser): Promise<User>;
   
   // Point request operations
   getPointRequestsByUser(userId: string): Promise<PointRequest[]>;
@@ -140,6 +141,40 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set(updates)
       .where(eq(users.id, userId));
+  }
+
+  // Upsert user for Replit auth
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const existingUser = await this.getUser(userData.id!);
+    
+    if (existingUser) {
+      const [user] = await db
+        .update(users)
+        .set({
+          ...userData,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userData.id!))
+        .returning();
+      return user;
+    } else {
+      // Generate membership ID for new users
+      const membershipId = `SA-SILVER-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+      
+      const [user] = await db
+        .insert(users)
+        .values({
+          ...userData,
+          id: userData.id!,
+          membershipId,
+          membershipTier: 'Silver',
+          currentPoints: 0,
+          totalEarned: 0,
+          totalUsed: 0,
+        })
+        .returning();
+      return user;
+    }
   }
 }
 
